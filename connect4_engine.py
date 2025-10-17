@@ -1,15 +1,20 @@
-import tkinter as tk
-from tkinter import messagebox
-
 ROWS, COLS = 6, 7
 player = 1
 board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+
+def print_board():
+    for r in range(ROWS):
+        for c in range(COLS):
+            sys.stdout.write(f"{board[r][c]}")
+        print("")
+    print("")
 
 def drop_piece(col):
     global player
     for row in reversed(range(ROWS)):
         if board[row][col] == 0:
-            board[row][col] = player    
+            board[row][col] = player 
+            print_board()   
             if check_win(player):
                 print(f"Player {player} wins")
                 reset_board()
@@ -36,16 +41,12 @@ def reset_board():
 
 import sys
 
-def print_board():
-    for r in range(ROWS):
-        for c in range(COLS):
-            sys.stdout.write(f"{board[r][c]}")
-        print("")
-    print("")
+
 
 if __name__ == "__main__":
     reset_board()
-    print_board()
-    drop_piece(0)
-    drop_piece(5)
-    print_board()
+    while True:
+        print_board()
+        print(f"Player {player}'s move:")
+        move = int(input())
+        drop_piece(move)
