@@ -42,8 +42,6 @@ def reset_board():
 
 import sys
 
-
-
 if __name__ == "__main__":
     reset_board()
     while True:
@@ -51,8 +49,10 @@ if __name__ == "__main__":
         print(f"Player {player}'s move:")
         try:
             move = int(input())
-            drop_piece(move)
-        except:
+            if move == 0:
+                sys.exit(0)
+            drop_piece(move - 1)
+        except (ValueError, IndexError):
             print("Invalid move! Type a valid column, try again")
             continue
 
