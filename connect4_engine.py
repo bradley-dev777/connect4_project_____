@@ -13,11 +13,16 @@ def drop_piece(col):
     global player
     for row in reversed(range(ROWS)):
         if board[row][col] == 0:
-            board[row][col] = player 
-            print_board()   
+            board[row][col] = player  
             if check_win(player):
                 print(f"Player {player} wins")
                 reset_board()
+                return
+            check_draw()
+            if check_draw():
+                print('Draw!')
+                reset_board()
+                return
             player = 2 if player == 1 else 1
             return
     print("Invalid move! You went above the board, try again")
@@ -35,6 +40,12 @@ def check_win(p):
             if all(board[r+3-i][c+i] == p for i in range(4)): return True
     return False
 
+def check_draw():
+    for c in range(COLS):
+        if board[0][c] == 0:
+            return False
+    return True
+
 def reset_board():
     global board, player
     board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
@@ -50,8 +61,10 @@ if __name__ == "__main__":
         try:
             move = int(input())
             if move == 0:
+                print('Quiting...')
                 sys.exit(0)
             drop_piece(move - 1)
+
         except (ValueError, IndexError):
             print("Invalid move! Type a valid column, try again")
             continue
