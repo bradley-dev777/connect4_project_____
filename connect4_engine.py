@@ -54,6 +54,43 @@ def reset_board():
     board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
     player = 1
 
+# represents the data of an AI model
+class Connect4Model:
+  
+    def Connect4Model(self):
+        pass
+      
+    # save the model to a file
+    def save(self, filename):
+        pass
+    
+    # load the model from a file
+    def load(self, filename):
+        pass
+    
+    # ask the model which move it should play, given the board
+    # position and this model's player
+    def play_move(self, board, player):
+        pass
+    
+    # update the model somehow to try to make it stronger
+    # maybe this is random updates?
+    def evolve(self):
+        pass
+
+# have two models play a game until one wins.
+# needs to return which model wins the game.
+# Also need a way to say it was a draw
+def play_one_game(model1, model2):
+    pass
+
+# Play a series of games between two models, return
+# which model won more.  Need to define how many more
+# is enough for us to conclude that one model is stronger
+# than the other.
+def play_series(model1, model2, number_of_games):
+    pass
+
 if __name__ == "__main__":
     reset_board()
     while True:
