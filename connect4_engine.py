@@ -1,6 +1,7 @@
 import sys
 import torch
 import torch.nn as nn
+import random
 
 ROWS, COLS = 6, 7
 player = 1
@@ -13,6 +14,11 @@ def print_board():
         print("")
     print("")
 
+DRAW = 0
+WIN = 1
+KEEP_PLAYING = 2
+INVALID_MOVE = 3
+
 def drop_piece(col):
     global player
     for row in reversed(range(ROWS)):
@@ -22,15 +28,16 @@ def drop_piece(col):
                 print(f"Player {player} wins")
                 print_board()
                 reset_board()
-                return
+                return WIN
             check_draw()
             if check_draw():
                 print('Draw!')
                 reset_board()
-                return
+                return DRAW
             player = 2 if player == 1 else 1
-            return
+            return KEEP_PLAYING
     print("Invalid move! You went above the board, try again")
+    return INVALID_MOVE
 
 def check_win(p):
     for r in range(ROWS):
@@ -74,7 +81,7 @@ class Connect4Model(nn.Module):
         pass
     
     # ask the model which move it should play, given the board
-    # position and this model's player
+    # position and this model's player.  Returns a column to play in.
     def play_move(self, board, player):
         pass
     
@@ -87,7 +94,24 @@ class Connect4Model(nn.Module):
 # needs to return which model wins the game.
 # Also need a way to say it was a draw
 def play_one_game(model1, model2):
-    pass
+    players = [model1, model2]
+    random.shuffle(players)
+
+    reset_board()
+    player_index = 0
+    while True:
+        move = players[player_index].play_move(board, player_index + 1)
+        result = drop_piece(move)
+        if result == DRAW:
+            # penalize anyone?
+            break
+        elif result == WIN:
+            # reward this model, penalize other one?
+            break
+        elif result == INVALID_MOVE:
+            # penalize this model
+            continue
+        player_index = (player_index + 1) % 2
 
 # Play a series of games between two models, return
 # which model won more.  Need to define how many more
