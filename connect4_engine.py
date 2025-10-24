@@ -1,4 +1,6 @@
 import sys
+import torch
+import torch.nn as nn
 
 ROWS, COLS = 6, 7
 player = 1
@@ -55,10 +57,13 @@ def reset_board():
     player = 1
 
 # represents the data of an AI model
-class Connect4Model:
+class Connect4Model(nn.Module):
   
-    def Connect4Model(self):
-        pass
+    def __init__(self, input_dim, output_dim):
+        super(Connect4Model, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64, output_dim)
       
     # save the model to a file
     def save(self, filename):
