@@ -80,7 +80,19 @@ class Connect4Model(nn.Module):
     # load the model from a file
     def load(self, filename):
         pass
-    
+
+    def play_move(self, board, player):
+        import random
+        board_tensor = torch.tensor(board, dtype=torch.float32).flatten()
+        with torch.no_grad():
+            outputs = self.forward(board_tensor)
+        move_scores = outputs.tolist()
+        moves = sorted(range(len(move_scores)), key=lambda i: move_scores[i], reverse=True)  
+        for move in moves:
+            if board[0][move] == 0:
+                return move
+            valid_moves = [c for c in range(len(board[0])) if board[0][c] == 0]
+            return random.choice(valid_moves) if valid_moves else None
     # ask the model which move it should play, given the board
     # position and this model's player.  Returns a column to play in.
     def play_move(self, board, player):
@@ -123,6 +135,17 @@ def play_series(model1, model2, number_of_games):
       play_one_game()
 
 if __name__ == "__main__":
+    model = Connect4Model(42, 7)
+    test_board = [
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0]
+    ]
+    move = model.play_move(test_board, player=1)
+    print("AI chose column:", move)
     reset_board()
     while True:
         print_board()
@@ -137,4 +160,3 @@ if __name__ == "__main__":
         except (ValueError, IndexError):
             print("Invalid move! Type a valid column, try again")
             continue
-
