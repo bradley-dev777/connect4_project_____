@@ -83,11 +83,12 @@ class Connect4Model(nn.Module):
 
     # save the model to a file
     def save(self, filename):
-        pass
+        torch.save(self.state_dict(), filename)
     
     # load the model from a file
     def load(self, filename):
-        pass
+        self.load_state_dict(torch.load(filename, weights_only=True))
+        self.eval()
 
     # ask the model which move it should play, given the board
     # position and this model's player.  Returns a column to play in.
@@ -158,5 +159,4 @@ def play_series(model1, model2, number_of_games):
 
 if __name__ == "__main__":
     model = Connect4Model(ROWS * COLS, COLS)
-#    play_one_game(None, model)
     play_one_game(None, model)
