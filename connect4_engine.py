@@ -83,7 +83,6 @@ class Connect4Model(nn.Module):
         pass
 
     def play_move(self, board, player):
-        import random
         board_tensor = torch.tensor(board, dtype=torch.float32).flatten()
         with torch.no_grad():
             outputs = self.forward(board_tensor)
