@@ -141,17 +141,9 @@ def play_series(model1, model2, number_of_games):
       play_one_game()
 
 if __name__ == "__main__":
-    model = Connect4Model(42, 7)
-    test_board = [
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0]
-    ]
-    move = model.play_move(test_board, player=1)
-    print("AI chose column:", move)
+#    model = Connect4Model(ROWS * COLS, COLS)
+#    move = model.play_move(board, player=1)
+#    print("AI chose column:", move)
     reset_board()
     while True:
         print_board()
