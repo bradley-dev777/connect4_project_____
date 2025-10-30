@@ -140,13 +140,16 @@ def play_one_game(model1, model2):
             return
             break
         elif result == WIN:
-            # reward this model, penalize other one?
             return player_index
             break
         elif result == INVALID_MOVE:
-            # penalize this model
-            return player_index + 2
-            break
+            if m is None:
+                # human made a mistake, let them try again
+                continue
+            else:
+                print("AI was not supposed to make an invalid move")
+                sys.exit(0)
+
         player_index = (player_index + 1) % 2
 
 # Play a series of games between two models, return
