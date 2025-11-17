@@ -105,7 +105,7 @@ class Connect4Model(nn.Module):
     
     # update the model somehow to try to make it stronger
     # maybe this is random updates?
-    def evolve(self):
+    class evolve(self):
         pass
 
 # have two models play a game until one wins.
