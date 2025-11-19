@@ -5,6 +5,7 @@ import torch.nn as nn
 import random
 import numpy as np
 import math
+import copy
 
 ROWS, COLS = 6, 7
 player = 1
@@ -83,6 +84,10 @@ class Connect4Model(nn.Module):
         self.fc1 = nn.Linear(input_dim, 64)
         self.fc2 = nn.Linear(64, 64)
         self.fc3 = nn.Linear(64, output_dim)
+        self.win_count = 0
+
+    def __lt__(self, other):
+        return self.win_count < other.win_count
 
     # this function tells pytorch how to apply the layers of the neural net
     def forward(self, x):
@@ -115,10 +120,11 @@ class Connect4Model(nn.Module):
             # apply the mask to the outputs and return the highest-rated move
             return torch.argmax(outputs - mask).item()
     
-    # update the model somehow to try to make it stronger
-    # maybe this is random updates?
-    def evolve(self):
-        pass
+    # return a copy of this model, with some weights randomly mutated
+    def get_mutant(self):
+        mutant = copy.deepcopy(self)
+        # TODO: modify the mutant
+        return mutant
 
 # have two models play a game until one wins.
 # if a model is None then a human needs to play.
@@ -164,10 +170,7 @@ def play_one_game(model1, model2):
 
         player_index = (player_index + 1) % 2
 
-# Play a series of games between two models, return
-# which model won more.  Need to define how many more
-# is enough for us to conclude that one model is stronger
-# than the other.
+# Play a series of games between two models, and set the win count on each model.
 def play_series(model1, model2, number_of_games):
     model1_wins = 0
     model2_wins = 0
@@ -177,11 +180,45 @@ def play_series(model1, model2, number_of_games):
             model1_wins += 1
         elif result == 1:
             model2_wins += 1
-    if model1_wins > model2_wins + 30:
-        return model1
-    elif model2_wins > model1_wins + 30:
-        return model2
-            
+    model1.win_count += model1_wins
+    model2.win_count += model2_wins
+
+class GeneticAlgorithm:
+    def __init__(self, num_models):
+        self.num_models = num_models
+        self.models = []
+        for i in range(num_models):
+            self.models.append(Connect4Model(ROWS * COLS, COLS))
+
+    # updates win count on each model
+    def everyone_play_everyone(self):
+        for i in range(num_models):
+            self.models[i].win_count = 0
+            for j in range(i+1, num_models):
+                play_series(self.models[i], self.models[j], 1000)
+
+    # mutate survivors until population is full
+    def fill_population(self):
+        survivor_count = len(models)
+        while len(models) < self.num_models:
+            to_mutate = self.models[random.randint(0, survivor_count - 1)]
+            self.models.append(to_mutate.get_mutant())
+
+    def generation_step(self):
+        # have everyone play everyone else
+        self.everyone_play_everyone()
+
+        # rank the models by decreasing number of wins
+        models.sort(reverse=True)
+
+        # keep only the top N models
+        num_keep = num_models // 10
+        models = models[:num_keep]
+
+        # mutate the surviving models into a new population
+        self.fill_population()
+
+
 if __name__ == "__main__":
     model = Connect4Model(ROWS * COLS, COLS)
     play_one_game(None, model)
