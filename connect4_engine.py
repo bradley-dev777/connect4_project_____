@@ -6,6 +6,7 @@ import random
 import numpy as np
 import math
 import copy
+import pickle
 
 ROWS, COLS = 6, 7
 player = 1
@@ -29,13 +30,13 @@ def drop_piece(col):
         if board[row,col] == 0:
             board[row,col] = player  
             if check_win(player):
-                print(f"Player {player} wins")
-                print_board()
+                #print(f"Player {player} wins")
+                #print_board()
                 reset_board()
                 return WIN
             check_draw()
             if check_draw():
-                print('Draw!')
+                #print('Draw!')
                 reset_board()
                 return DRAW
             player = 2 if player == 1 else 1
@@ -123,7 +124,14 @@ class Connect4Model(nn.Module):
     # return a copy of this model, with some weights randomly mutated
     def get_mutant(self):
         mutant = copy.deepcopy(self)
-        # TODO: modify the mutant
+        # modify the mutant
+        with torch.no_grad():
+            for param in mutant.parameters():
+                for val in param.flatten():
+                    # 10% mutation rate
+                    if random.random() < 0.1:
+                        # mutate the parameter by multiplying by the range -2.0 to 2.0
+                        val *= random.uniform(-2.0, 2.0)
         return mutant
 
 # have two models play a game until one wins.
@@ -152,7 +160,7 @@ def play_one_game(model1, model2):
                 continue
         else:
             move = m.play_move(board, player_index + 1)
-            print(f'AI player {player} moved in column {move + 1}')
+            #print(f'AI player {player} moved in column {move + 1}')
         result = drop_piece(move)
         if result == DRAW:
             return
@@ -192,33 +200,48 @@ class GeneticAlgorithm:
 
     # updates win count on each model
     def everyone_play_everyone(self):
-        for i in range(num_models):
-            self.models[i].win_count = 0
-            for j in range(i+1, num_models):
-                play_series(self.models[i], self.models[j], 1000)
+        # initialize everyone's count to 0
+        for model in self.models:
+            model.win_count = 0
+        for i in range(self.num_models):
+            for j in range(i+1, self.num_models):
+                play_series(self.models[i], self.models[j], 100)
+                print(f"model {i} won {self.models[i].win_count}, model {j} won {self.models[j].win_count}")
 
     # mutate survivors until population is full
     def fill_population(self):
-        survivor_count = len(models)
-        while len(models) < self.num_models:
+        survivor_count = len(self.models)
+        while len(self.models) < self.num_models:
             to_mutate = self.models[random.randint(0, survivor_count - 1)]
             self.models.append(to_mutate.get_mutant())
 
-    def generation_step(self):
+    def generation_step(self, step_number):
         # have everyone play everyone else
         self.everyone_play_everyone()
 
         # rank the models by decreasing number of wins
-        models.sort(reverse=True)
+        self.models.sort(reverse=True)
+
+        print(f"step {step_number} best model won {self.models[0].win_count} games, worst won {self.models[-1].win_count}")
 
         # keep only the top N models
-        num_keep = num_models // 10
-        models = models[:num_keep]
+        num_keep = self.num_models // 10
+        self.models = self.models[:num_keep]
 
         # mutate the surviving models into a new population
         self.fill_population()
 
 
 if __name__ == "__main__":
-    model = Connect4Model(ROWS * COLS, COLS)
-    play_one_game(None, model)
+#    model = Connect4Model(ROWS * COLS, COLS)
+#    play_one_game(None, model)
+
+    try:
+        with open('genetic_data', 'rb') as f:
+            gen = pickle.load(f)
+    except:
+        gen = GeneticAlgorithm(20)
+    for i in range(1):
+        gen.generation_step(i)
+        with open('genetic_data', 'wb') as f:
+            pickle.dump(gen, f)
