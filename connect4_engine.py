@@ -88,6 +88,8 @@ class Connect4Model(nn.Module):
         self.fc1 = nn.Linear(4*5, 128)
         self.fc2 = nn.Linear(128, output_dim)
         self.win_count = 0
+        # list of (board_state, move) tuples
+        self.moves = []
 
     def __lt__(self, other):
         return self.win_count < other.win_count
@@ -145,6 +147,8 @@ class Connect4Model(nn.Module):
 def play_one_game(model1, model2):
     players = [model1, model2]
     reset_board()
+    model1.moves.clear()
+    model2.moves.clear()
     player_index = random.randint(0,1)
     while True:
         m = players[player_index]
@@ -165,6 +169,7 @@ def play_one_game(model1, model2):
         else:
             move = m.play_move(board, player_index + 1)
             #print(f'AI player {player} moved in column {move + 1}')
+            m.moves.append((board.copy(), move))
         result = drop_piece(move)
         if result == DRAW:
             return
