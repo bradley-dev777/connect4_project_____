@@ -136,8 +136,8 @@ class Connect4Model(nn.Module):
         with torch.no_grad():
             for param in mutant.parameters():
                 for val in param.flatten():
-                    # 10% mutation rate
-                    if random.random() < 0.1:
+                    # 1% mutation rate
+                    if random.random() < 0.01:
                         # mutate the parameter by multiplying by the range -2.0 to 2.0
                         val *= random.uniform(-2.0, 2.0)
         return mutant
