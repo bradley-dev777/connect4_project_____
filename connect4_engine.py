@@ -316,8 +316,8 @@ if __name__ == "__main__":
     for model in gen.models:
         model.cuda()
 
-    for i in range(10000):
-        gen.generation_step(i)
+    for _ in range(2):
+        gen.generation_step()
         with open('genetic_data', 'wb') as f:
             pickle.dump(gen, f)
 #    play_one_game(None, gen.models[1])
