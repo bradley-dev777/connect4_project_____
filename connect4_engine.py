@@ -146,25 +146,31 @@ class Connect4Model(nn.Module):
 def reward_move(model, board_tensor, move, reward, optimizer, criterion):
     optimizer.zero_grad()
     outputs = model(board_tensor)
-    target = outputs.new_zeros(COLS)
-    target[move] = reward
+    # we can make the target have the same outputs, but with a
+    # slightly larger value for this move
+    target = outputs.clone()
+    if reward > 0:
+        target[move] = torch.max(outputs) + reward
+    else:
+        target[move] = torch.min(outputs) + reward
     loss = criterion(outputs, target)
     loss.backward()
     optimizer.step()
 
 def reward_model(model, reward):
     criterion = nn.MSELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-    # reward the winning move
+    # reward the last move
     reward_move(model, model.moves[-1][0], model.moves[-1][1], reward, optimizer, criterion)
 
     # remove the winning move and reward a random set of 5 of the
     # remaining moves
-    model.moves.pop()
-    random.shuffle(model.moves)
-    for move in model.moves[:5]:
-        reward_move(model, move[0], move[1], reward, optimizer, criterion)
+    if reward == 1.0:
+        model.moves.pop()
+        random.shuffle(model.moves)
+        for move in model.moves[:5]:
+            reward_move(model, move[0], move[1], reward, optimizer, criterion)
 
 # have two models play a game until one wins.
 # if a model is None then a human needs to play.
@@ -201,7 +207,11 @@ def play_one_game(model1, model2):
             break
         elif result == WIN:
             # reinforce winning move
-            reward_model(m, 1.0)
+            if m is not None:
+                reward_model(m, 1.0)
+            # punish losing move
+            other_m = players[(player_index + 1) % 2]
+            reward_model(other_m, -1.0)
             return player_index
             break
         elif result == INVALID_MOVE:
